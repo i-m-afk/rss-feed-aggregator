@@ -7,22 +7,23 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
-Insert Into users (id, created_at, updated_at, name)
-values ($1, $2, $3, $4)
-returning id, created_at, updated_at, name
+Insert Into users (id, created_at, updated_at, name, api_key)
+values ($1, $2, $3, $4, $5)
+returning id, created_at, updated_at, name, api_key
 `
 
 type CreateUserParams struct {
 	ID        uuid.UUID
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	Name      string
+	ApiKey    string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -31,6 +32,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.Name,
+		arg.ApiKey,
 	)
 	var i User
 	err := row.Scan(
@@ -38,6 +40,24 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
+		&i.ApiKey,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+Select id, created_at, updated_at, name, api_key from users where api_key = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, apiKey string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, apiKey)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ApiKey,
 	)
 	return i, err
 }

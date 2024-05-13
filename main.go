@@ -49,6 +49,7 @@ func main() {
 	mux.HandleFunc("GET /v1/readiness", readinessHandler)
 	mux.HandleFunc("GET /v1/err", errHandler)
 	mux.HandleFunc("POST /v1/users", apiConf.createUserHandler)
+	mux.HandleFunc("GET /v1/users", apiConf.getUserHandler)
 
 	server := http.Server{
 		Addr:    "localhost:" + port,

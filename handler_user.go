@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/i-m-afk/rss/internal/database"
+	"github.com/i-m-afk/rss/internal/utils"
 )
 
 type userBody struct {
@@ -31,19 +31,26 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 		respondWithError(w, http.StatusBadRequest, "Name is required")
 		return
 	}
-	currTime := sql.NullTime{
-		Time:  time.Now().UTC(),
-		Valid: true,
-	}
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
-		CreatedAt: currTime,
+		CreatedAt: time.Now(),
 		ID:        uuid.New(),
-		UpdatedAt: currTime,
+		UpdatedAt: time.Now(),
 		Name:      name,
+		ApiKey:    utils.GenSha(),
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating user")
 		return
 	}
 	respondWithJSON(w, http.StatusCreated, cfg.databaseUserToUser(user))
+}
+
+func (cfg *apiConfig) getUserHandler(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.Header.Get("ApiKey")
+	user, err := cfg.DB.GetUser(r.Context(), apiKey)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "ApiKey not found")
+		return
+	}
+	respondWithJSON(w, http.StatusOK, cfg.databaseUserToUser(user))
 }
