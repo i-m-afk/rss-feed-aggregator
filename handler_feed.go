@@ -44,3 +44,12 @@ func (cfg *apiConfig) createFeedHandler(w http.ResponseWriter, r *http.Request) 
 	middleware := cfg.middlewareAuth(handler)
 	middleware(w, r)
 }
+
+func (cfg *apiConfig) getAllFeedsHandler(w http.ResponseWriter, r *http.Request) {
+	feeds, err := cfg.DB.GetFeeds(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to retrive feeds")
+		return
+	}
+	respondWithJSON(w, http.StatusOK, feeds)
+}

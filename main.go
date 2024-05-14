@@ -51,6 +51,7 @@ func main() {
 	mux.HandleFunc("POST /v1/users", apiConf.createUserHandler)
 	mux.HandleFunc("GET /v1/users", apiConf.getUserHandler)
 	mux.HandleFunc("POST /v1/feeds", apiConf.createFeedHandler)
+	mux.HandleFunc("GET /v1/feeds", apiConf.getAllFeedsHandler)
 
 	server := http.Server{
 		Addr:    "localhost:" + port,
