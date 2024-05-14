@@ -46,11 +46,9 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (cfg *apiConfig) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	apiKey := r.Header.Get("ApiKey")
-	user, err := cfg.DB.GetUser(r.Context(), apiKey)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "ApiKey not found")
-		return
+	handler := func(w http.ResponseWriter, r *http.Request, user database.User) {
+		respondWithJSON(w, http.StatusOK, cfg.databaseUserToUser(user))
 	}
-	respondWithJSON(w, http.StatusOK, cfg.databaseUserToUser(user))
+	middleware := cfg.middlewareAuth(handler)
+	middleware(w, r)
 }
