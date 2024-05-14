@@ -51,5 +51,5 @@ func (cfg *apiConfig) getAllFeedsHandler(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Failed to retrive feeds")
 		return
 	}
-	respondWithJSON(w, http.StatusOK, feeds)
+	respondWithJSON(w, http.StatusOK, cfg.databaseFeedsToFeeds(feeds))
 }

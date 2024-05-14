@@ -44,3 +44,11 @@ func (cfg *apiConfig) databaseFeedToFeed(feed database.Feed) Feed {
 		UserID:    feed.UserID.UUID,
 	}
 }
+
+func (cfg *apiConfig) databaseFeedsToFeeds(feeds []database.Feed) []Feed {
+	feedList := make([]Feed, len(feeds))
+	for i, feed := range feeds {
+		feedList[i] = cfg.databaseFeedToFeed(feed)
+	}
+	return feedList
+}
