@@ -24,6 +24,19 @@ type Feed struct {
 	ID        uuid.UUID `json:"id"`
 }
 
+type FeedFollow struct {
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	FeedId    uuid.UUID `json:"feed_id"`
+	UserId    uuid.UUID `json:"user_id"`
+}
+
+type FeedAndFollows struct {
+	Feed       Feed       `json:"feed"`
+	FeedFollow FeedFollow `json:"feed_follow"`
+}
+
 func (cfg *apiConfig) databaseUserToUser(user database.User) User {
 	return User{
 		ID:        user.ID,
@@ -51,4 +64,28 @@ func (cfg *apiConfig) databaseFeedsToFeeds(feeds []database.Feed) []Feed {
 		feedList[i] = cfg.databaseFeedToFeed(feed)
 	}
 	return feedList
+}
+
+func (cfg *apiConfig) databaseFeedFollowToFeedFollow(feedfollow database.FeedFollow) FeedFollow {
+	return FeedFollow{
+		UserId:    feedfollow.UserID.UUID,
+		FeedId:    feedfollow.FeedID.UUID,
+		ID:        feedfollow.ID,
+		CreatedAt: feedfollow.CreatedAt,
+		UpdatedAt: feedfollow.UpdatedAt,
+	}
+}
+
+func (cfg *apiConfig) databaseFeedsFollowsToFeedsFollows(feedsfollows []database.FeedFollow) []FeedFollow {
+	feedFollowList := make([]FeedFollow, len(feedsfollows))
+	for i, feedfollow := range feedsfollows {
+		feedFollowList[i] = cfg.databaseFeedFollowToFeedFollow(feedfollow)
+	}
+	return feedFollowList
+}
+
+func (cfg *apiConfig) databaseFeedNFollowsToFeedNFollows(feed database.Feed, feedfollow database.FeedFollow) FeedAndFollows {
+	f := cfg.databaseFeedToFeed(feed)
+	ff := cfg.databaseFeedFollowToFeedFollow(feedfollow)
+	return FeedAndFollows{Feed: f, FeedFollow: ff}
 }

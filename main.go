@@ -52,6 +52,9 @@ func main() {
 	mux.HandleFunc("GET /v1/users", apiConf.getUserHandler)
 	mux.HandleFunc("POST /v1/feeds", apiConf.createFeedHandler)
 	mux.HandleFunc("GET /v1/feeds", apiConf.getAllFeedsHandler)
+	mux.HandleFunc("POST /v1/feed_follows", apiConf.createFeedFollowHandler)
+	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", apiConf.deleteFeedFollowHandler)
+	mux.HandleFunc("GET /v1/feed_follows", apiConf.getAllFeedFollowsForUserHandler)
 
 	go initServer(mux, port)
 
