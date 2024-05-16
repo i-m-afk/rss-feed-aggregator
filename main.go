@@ -53,15 +53,22 @@ func main() {
 	mux.HandleFunc("POST /v1/feeds", apiConf.createFeedHandler)
 	mux.HandleFunc("GET /v1/feeds", apiConf.getAllFeedsHandler)
 
+	go initServer(mux, port)
+
+	// prevent the main goroutine from exiting
+	select {}
+}
+
+func initServer(mux *http.ServeMux, port string) {
 	server := http.Server{
 		Addr:    "localhost:" + port,
 		Handler: mux,
 	}
-	err = server.ListenAndServe()
+
+	log.Printf("Server started on port %s", port)
+	err := server.ListenAndServe()
 	if err != nil {
 		log.Panic(err)
 	}
 	defer server.Shutdown(context.TODO())
-
-	log.Printf("Server started on port %s", port)
 }
