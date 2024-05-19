@@ -56,13 +56,17 @@ func main() {
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", apiConf.deleteFeedFollowHandler)
 	mux.HandleFunc("GET /v1/feed_follows", apiConf.getAllFeedFollowsForUserHandler)
 
-	go initServer(mux, port)
-
+	done := make(chan bool)
+	go func() {
+		if err := initServer(mux, port); err != nil {
+			log.Panic(err)
+		}
+	}()
 	// prevent the main goroutine from exiting
-	select {}
+	<-done
 }
 
-func initServer(mux *http.ServeMux, port string) {
+func initServer(mux *http.ServeMux, port string) error {
 	server := http.Server{
 		Addr:    "localhost:" + port,
 		Handler: mux,
@@ -72,6 +76,8 @@ func initServer(mux *http.ServeMux, port string) {
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Panic(err)
+		return err
 	}
 	defer server.Shutdown(context.TODO())
+	return nil
 }
