@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/i-m-afk/rss/internal/database"
 	"github.com/joho/godotenv"
@@ -57,6 +58,7 @@ func main() {
 	mux.HandleFunc("GET /v1/feed_follows", apiConf.getAllFeedFollowsForUserHandler)
 
 	done := make(chan bool)
+	go worker(10, &apiConf, time.Second*60, done)
 	go func() {
 		if err := initServer(mux, port); err != nil {
 			log.Panic(err)
