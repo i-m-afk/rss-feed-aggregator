@@ -56,6 +56,7 @@ func main() {
 	mux.HandleFunc("POST /v1/feed_follows", apiConf.createFeedFollowHandler)
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", apiConf.deleteFeedFollowHandler)
 	mux.HandleFunc("GET /v1/feed_follows", apiConf.getAllFeedFollowsForUserHandler)
+	mux.HandleFunc("GET /v1/posts", apiConf.getPostByUser)
 
 	done := make(chan bool)
 	go worker(10, &apiConf, time.Second*60, done)
