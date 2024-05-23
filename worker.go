@@ -52,7 +52,7 @@ func getFeedsToFetch(n int32, conf *apiConfig) {
 func (conf *apiConfig) setAllFeedsAsFetched(feeds []database.Feed) {
 	for _, feed := range feeds {
 		err := conf.DB.MarkFeedAsFetched(context.Background(), database.MarkFeedAsFetchedParams{
-			LastFetchedAt: sql.NullTime{Time: time.Now()},
+			LastFetchedAt: sql.NullTime{Time: time.Now().UTC(), Valid: true},
 			ID:            feed.ID,
 		})
 		if err != nil {
@@ -63,7 +63,7 @@ func (conf *apiConfig) setAllFeedsAsFetched(feeds []database.Feed) {
 
 func (conf *apiConfig) savePost(rss map[string]scraper.RssFeedXml, feeds []database.Feed) {
 	for k, r := range rss {
-		_, err := conf.DB.CreatePost(context.Background(), database.CreatePostParams{
+		post, err := conf.DB.CreatePost(context.Background(), database.CreatePostParams{
 			ID:          uuid.New(),
 			CreatedAt:   time.Now().UTC(),
 			UpdatedAt:   sql.NullTime{Time: time.Now().UTC()},
@@ -80,6 +80,8 @@ func (conf *apiConfig) savePost(rss map[string]scraper.RssFeedXml, feeds []datab
 			} else {
 				log.Println(err)
 			}
+		} else {
+			conf.saveRssItems(r.Channel.Items, post.ID)
 		}
 	}
 }
@@ -91,4 +93,32 @@ func getFeedIdFromUrl(feeds []database.Feed, url string) uuid.UUID {
 		}
 	}
 	return uuid.Nil
+}
+
+func (conf *apiConfig) saveRssItems(items []*scraper.RssItem, postId uuid.UUID) {
+	for _, item := range items {
+		conf.saveRssItem(item, postId)
+	}
+}
+
+func (conf *apiConfig) saveRssItem(item *scraper.RssItem, postId uuid.UUID) {
+	_, err := conf.DB.CreateRssItem(context.Background(), database.CreateRssItemParams{
+		ID:          uuid.New(),
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   sql.NullTime{Time: time.Now().UTC()},
+		Title:       item.Title,
+		Description: sql.NullString{String: item.Description, Valid: true},
+		Url:         item.Link,
+		Author:      sql.NullString{String: item.Author, Valid: true},
+		PublishedAt: sql.NullString{String: item.PubDate, Valid: true},
+		PostID:      uuid.NullUUID{UUID: postId, Valid: true},
+	})
+	if err != nil {
+		if perr, ok := err.(*pq.Error); ok && perr.Code.Name() == "unique_violation" {
+			log.Println("Rss Item already exists", item.Title)
+			return
+		}
+		log.Println(err)
+		return
+	}
 }
