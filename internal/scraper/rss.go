@@ -43,9 +43,5 @@ func FetchDataFromUrl(url string) (RssFeedXml, error) {
 		log.Println(err, url)
 		return RssFeedXml{}, err
 	}
-	// TODO: make a table to store this
-	// for _, item := range x.Channel.Items {
-	// 	fmt.Println(item)
-	// }
 	return x, nil
 }
