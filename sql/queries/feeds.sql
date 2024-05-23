@@ -7,11 +7,11 @@ returning *;
 SELECT * FROM feeds ORDER BY created_at;
 
 -- name: GetNextFeedsToFetch :many
-SELECT * FROM feeds ORDER BY last_fetched_at LIMIT $1;
-
--- name: UpdateFeed :exec
-UPDATE feeds
-  SET last_fetched_at = $1;
+SELECT * FROM feeds
+ORDER BY 
+    last_fetched_at IS NULL DESC, 
+    last_fetched_at ASC
+LIMIT $1;
 
 -- name: MarkFeedAsFetched :exec
 UPDATE feeds

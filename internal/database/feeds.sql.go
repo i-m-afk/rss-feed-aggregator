@@ -86,7 +86,11 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]Feed, error) {
 }
 
 const getNextFeedsToFetch = `-- name: GetNextFeedsToFetch :many
-SELECT id, created_at, updated_at, name, user_id, url, last_fetched_at FROM feeds ORDER BY last_fetched_at LIMIT $1
+SELECT id, created_at, updated_at, name, user_id, url, last_fetched_at FROM feeds
+ORDER BY 
+    last_fetched_at IS NULL DESC, 
+    last_fetched_at ASC
+LIMIT $1
 `
 
 func (q *Queries) GetNextFeedsToFetch(ctx context.Context, limit int32) ([]Feed, error) {
@@ -133,15 +137,5 @@ type MarkFeedAsFetchedParams struct {
 
 func (q *Queries) MarkFeedAsFetched(ctx context.Context, arg MarkFeedAsFetchedParams) error {
 	_, err := q.db.ExecContext(ctx, markFeedAsFetched, arg.LastFetchedAt, arg.ID)
-	return err
-}
-
-const updateFeed = `-- name: UpdateFeed :exec
-UPDATE feeds
-  SET last_fetched_at = $1
-`
-
-func (q *Queries) UpdateFeed(ctx context.Context, lastFetchedAt sql.NullTime) error {
-	_, err := q.db.ExecContext(ctx, updateFeed, lastFetchedAt)
 	return err
 }

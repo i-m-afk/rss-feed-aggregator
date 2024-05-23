@@ -49,6 +49,18 @@ type Post struct {
 	FeedID      uuid.UUID `json:"feed_id"`
 }
 
+type RssItem struct {
+	RssItemID          uuid.UUID `json:"id"`
+	RssItemCreatedAt   time.Time `json:"created_at"`
+	RssItemUpdatedAt   time.Time `json:"updated_at"`
+	RssItemTitle       string    `json:"title"`
+	RssItemUrl         string    `json:"url"`
+	RssItemAuthor      string    `json:"author"`
+	RssItemDescription string    `json:"description"`
+	RssItemPublishedAt string    `json:"published_at"`
+	RssItemPostID      uuid.UUID `json:"post_id"`
+}
+
 func (cfg *apiConfig) databaseUserToUser(user database.User) User {
 	return User{
 		ID:        user.ID,
@@ -122,4 +134,26 @@ func (cfg *apiConfig) databasePostsToPosts(posts []database.Post) []Post {
 		postList[i] = cfg.databasePostToPost(post)
 	}
 	return postList
+}
+
+func (cfg *apiConfig) databaseRssItemToRssItem(rssItem database.GetRssItemsForUserRow) RssItem {
+	return RssItem{
+		RssItemID:          rssItem.RssItemID,
+		RssItemCreatedAt:   rssItem.RssItemCreatedAt,
+		RssItemUpdatedAt:   rssItem.RssItemUpdatedAt.Time,
+		RssItemTitle:       rssItem.RssItemTitle,
+		RssItemUrl:         rssItem.RssItemUrl,
+		RssItemAuthor:      rssItem.RssItemAuthor.String,
+		RssItemDescription: rssItem.RssItemDescription.String,
+		RssItemPublishedAt: rssItem.RssItemPublishedAt.String,
+		RssItemPostID:      rssItem.RssItemPostID.UUID,
+	}
+}
+
+func (cfg *apiConfig) databaseRssItemsToRssItems(rssItems []database.GetRssItemsForUserRow) []RssItem {
+	rssItemList := make([]RssItem, len(rssItems))
+	for i, rssItem := range rssItems {
+		rssItemList[i] = cfg.databaseRssItemToRssItem(rssItem)
+	}
+	return rssItemList
 }

@@ -40,6 +40,18 @@ type Post struct {
 	FeedID      uuid.NullUUID
 }
 
+type RssItem struct {
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   sql.NullTime
+	Title       string
+	Url         string
+	Author      sql.NullString
+	Description sql.NullString
+	PublishedAt sql.NullString
+	PostID      uuid.NullUUID
+}
+
 type User struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
